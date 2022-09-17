@@ -22,6 +22,7 @@ import static com.edu.ulab.app.web.constant.WebConstant.RQID;
 @RequestMapping(value = WebConstant.VERSION_URL + "/user",
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
+
     private final UserDataFacade userDataFacade;
 
     public UserController(UserDataFacade userDataFacade) {
@@ -34,16 +35,21 @@ public class UserController {
                     @ApiResponse(description = "User book",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = UserBookResponse.class)))})
-    public UserBookResponse createUserWithBooks(@RequestBody UserBookRequest request,
-                                                @RequestHeader(RQID) @Pattern(regexp = REQUEST_ID_PATTERN) final String requestId) {
+    public UserBookResponse createUserWithBooks(
+            @RequestBody UserBookRequest request,
+            @RequestHeader(RQID) @Pattern(regexp = REQUEST_ID_PATTERN) final String requestId
+    ) {
         UserBookResponse response = userDataFacade.createUserWithBooks(request);
         log.info("Response with created user and his books: {}", response);
         return response;
     }
 
-    @PutMapping(value = "/update")
-    public UserBookResponse updateUserWithBooks(@RequestBody UserBookRequest request) {
-        UserBookResponse response = userDataFacade.updateUserWithBooks(request);
+    @PutMapping(value = "/update/{userId}")
+    public UserBookResponse updateUserWithBooks(
+            @RequestBody UserBookRequest request,
+            @PathVariable Long userId
+    ) {
+        UserBookResponse response = userDataFacade.updateUserWithBooks(request, userId);
         log.info("Response with updated user and his books: {}", response);
         return response;
     }
