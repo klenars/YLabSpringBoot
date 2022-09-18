@@ -52,6 +52,7 @@ public class UserDataFacade {
         log.info("Collected book ids: {}", bookIdList);
 
         userService.setListBooks(createdUser.getId());
+        log.info("Set list books to user id={}", createdUser.getId());
 
         return UserBookResponse.builder()
                 .userId(createdUser.getId())
@@ -60,14 +61,45 @@ public class UserDataFacade {
     }
 
     public UserBookResponse updateUserWithBooks(UserBookRequest userBookRequest, Long userId) {
-        return null;
+        log.info("Got user book update request: {}", userBookRequest);
+        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
+        log.info("Mapped user request for update: {}", userDto);
+
+        UserDto updatedUser = userService.updateUser(userDto, userId);
+        log.info("Got updated user from userService: {}", updatedUser);
+
+        bookService.getAllByUserId(userId)
+                .forEach(bookDto -> bookService.deleteBookById(bookDto.getId()));
+        log.info("Deleted old books from updated user");
+
+        List<Long> bookIdList = userBookRequest.getBookRequests().stream()
+                .filter(Objects::nonNull)
+                .map(bookMapper::bookRequestToBookDto)
+                .peek(bookDto -> bookDto.setUserId(updatedUser.getId()))
+                .peek(mappedBookDto -> log.info("mapped new book: {}", mappedBookDto))
+                .map(bookService::createBook)
+                .peek(createdBook -> log.info("Created new book: {}", createdBook))
+                .map(BookDto::getId)
+                .toList();
+        log.info("Collected new book ids: {}", bookIdList);
+
+        userService.setListBooks(updatedUser.getId());
+        log.info("Set list books to user id={}", userId);
+
+        return UserBookResponse.builder()
+                .userId(updatedUser.getId())
+                .booksIdList(bookIdList)
+                .build();
     }
 
     public UserBookResponse getUserWithBooks(Long userId) {
+        log.info("GET request with id: {}", userId);
         UserDto calledUser = userService.getUserById(userId);
+        log.info("Got userDto from service: {}", calledUser);
         List<Long> bookIdList = bookService.getAllByUserId(userId).stream()
                 .map(BookDto::getId)
                 .toList();
+        log.info("Collected book ids for called user: {}", bookIdList);
 
         return UserBookResponse.builder()
                 .userId(calledUser.getId())
@@ -76,5 +108,8 @@ public class UserDataFacade {
     }
 
     public void deleteUserWithBooks(Long userId) {
+        log.info("DELETE request with id: {}", userId);
+        userService.deleteUserById(userId);
+        log.info("User id={} and his books deleted", userId);
     }
 }

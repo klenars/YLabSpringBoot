@@ -2,13 +2,14 @@ package com.edu.ulab.app.mapper;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.entity.Book;
+import com.edu.ulab.app.entity.User;
 import com.edu.ulab.app.web.request.BookRequest;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-09-17T21:00:09+0300",
+    date = "2022-09-18T12:47:12+0300",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.4.1 (Amazon.com Inc.)"
 )
 @Component
@@ -68,12 +69,27 @@ public class BookMapperImpl implements BookMapper {
 
         BookDto bookDto = new BookDto();
 
-        bookDto.setUserId( book.getId() );
+        bookDto.setUserId( bookUserId( book ) );
         bookDto.setId( book.getId() );
         bookDto.setTitle( book.getTitle() );
         bookDto.setAuthor( book.getAuthor() );
         bookDto.setPageCount( book.getPageCount() );
 
         return bookDto;
+    }
+
+    private Long bookUserId(Book book) {
+        if ( book == null ) {
+            return null;
+        }
+        User user = book.getUser();
+        if ( user == null ) {
+            return null;
+        }
+        Long id = user.getId();
+        if ( id == null ) {
+            return null;
+        }
+        return id;
     }
 }

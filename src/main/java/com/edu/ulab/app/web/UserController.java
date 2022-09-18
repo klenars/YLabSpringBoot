@@ -45,9 +45,15 @@ public class UserController {
     }
 
     @PutMapping(value = "/update/{userId}")
+    @Operation(summary = "Update user and his books row.",
+            responses = {
+                    @ApiResponse(description = "User book",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserBookResponse.class)))})
     public UserBookResponse updateUserWithBooks(
             @RequestBody UserBookRequest request,
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @RequestHeader(RQID) @Pattern(regexp = REQUEST_ID_PATTERN) final String requestId
     ) {
         UserBookResponse response = userDataFacade.updateUserWithBooks(request, userId);
         log.info("Response with updated user and his books: {}", response);
@@ -55,14 +61,26 @@ public class UserController {
     }
 
     @GetMapping(value = "/get/{userId}")
-    public UserBookResponse updateUserWithBooks(@PathVariable Long userId) {
+    @Operation(summary = "Get user with his books row.",
+            responses = {
+                    @ApiResponse(description = "User book",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserBookResponse.class)))})
+    public UserBookResponse updateUserWithBooks(
+            @PathVariable Long userId,
+            @RequestHeader(RQID) @Pattern(regexp = REQUEST_ID_PATTERN) final String requestId
+    ) {
         UserBookResponse response = userDataFacade.getUserWithBooks(userId);
         log.info("Response with user and his books: {}", response);
         return response;
     }
 
     @DeleteMapping(value = "/delete/{userId}")
-    public void deleteUserWithBooks(@PathVariable Long userId) {
+    @Operation(summary = "Delete user with his books")
+    public void deleteUserWithBooks(
+            @PathVariable Long userId,
+            @RequestHeader(RQID) @Pattern(regexp = REQUEST_ID_PATTERN) final String requestId
+    ) {
         log.info("Delete user and his books:  userId {}", userId);
         userDataFacade.deleteUserWithBooks(userId);
     }
